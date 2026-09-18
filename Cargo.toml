@@ -11,3 +11,6 @@ axum = "0.8.9"
 
 [dev-dependencies]
 reqwest = "0.13.5"
+
+[dev-dependencies]
+reqwest = "0.13.5"
