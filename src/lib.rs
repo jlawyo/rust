@@ -18,3 +18,4 @@ mod tests {
         let response = hello_world().await;
         assert_eq!(response, "Hello, World!");
     }
+}
