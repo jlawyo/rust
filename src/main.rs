@@ -1,7 +1,3 @@
-use axum::{
-    routing::get,
-    Router,
-};
 use axum::Server;
 use std::net::SocketAddr;
 use hello_cargo::app;
