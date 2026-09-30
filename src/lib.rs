@@ -1,5 +1,10 @@
 use axum::{routing::get, Json, Router};
 use serde_json::json;
+use axum::{
+    extract::Query,
+};
+use serde_derive::{Deserialize, Serialize};
+
 
 async fn hello_world() -> Json<serde_json::Value> {
     Json(json!({ "message": "Hello, World!" }))
@@ -35,11 +40,6 @@ mod tests {
     }
 
 }
-use axum::{
-    extract::Query,
-};
-use serde_derive::{Deserialize, Serialize};
-
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Echo {
     pub text: Option<String>,
