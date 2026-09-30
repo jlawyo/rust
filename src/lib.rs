@@ -1,6 +1,5 @@
 use axum::{routing::get, Json, Router};
 use serde_json::json;
-use axum_test::TestServer;
 
 async fn hello_world() -> Json<serde_json::Value> {
     Json(json!({ "message": "Hello, World!" }))
@@ -15,7 +14,7 @@ pub fn app() -> Router {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use axum_test::TestServer;
+    use axum_test::{TestResponse, TestServer};
     use serde_json::json;
 
     #[tokio::test]
@@ -26,10 +25,18 @@ mod tests {
 
         response.assert_json(&json!({ "message": "Hello, World!" }));
     }
+    #[tokio::test]
+    async fn test_echo() {
+        let server = TestServer::new(app());
+
+        let response = server.get("/echo").await;
+
+        response.assert_json(&json!({ "text": "Echo" }));
+    }
+
 }
 use axum::{
     extract::Query,
-    Json,
 };
 use serde_derive::{Deserialize, Serialize};
 
