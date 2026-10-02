@@ -136,4 +136,4 @@ This project does not currently include a license file. If you plan to share or 
 
 ## Project Status
 
-This is a lightweight starter project in a working state. It is a good foundation for learning Rust web development or expanding into a larger application.
+This is a starter project in a working state. It is a foundation for learning Rust web development or expanding into a larger application.
