@@ -1,5 +1,10 @@
 use axum::{routing::get, Json, Router};
 use serde_json::json;
+use axum::{
+    extract::Query,
+};
+use serde_derive::{Deserialize, Serialize};
+
 
 async fn hello_world() -> Json<serde_json::Value> {
     Json(json!({ "message": "Hello, World!" }))
@@ -11,6 +16,20 @@ pub fn app() -> Router {
         .route("/echo", get(echo_text))
 }
 
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Echo {
+    pub text: Option<String>,
+}
+
+
+pub async fn echo_text(Query(params): Query<Echo>) -> Json<Echo> {
+    let Echo { text } = params;
+    match text{
+        Some(echoed_text) => Json(Echo { text: Some(echoed_text) }),
+        None =>   Json(Echo { text: Some(String::from("Echo"))}),
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -34,22 +53,4 @@ mod tests {
         response.assert_json(&json!({ "text": "Echo" }));
     }
 
-}
-use axum::{
-    extract::Query,
-};
-use serde_derive::{Deserialize, Serialize};
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Echo {
-    pub text: Option<String>,
-}
-
-
-pub async fn echo_text(Query(params): Query<Echo>) -> Json<Echo> {
-    let Echo { text } = params;
-    match text{
-        Some(echoed_text) => Json(Echo { text: Some(echoed_text) }),
-        None =>   Json(Echo { text: Some(String::from("Echo"))}),
-    }
 }
