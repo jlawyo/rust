@@ -122,8 +122,7 @@ content-type: application/json
 
 ## Contributing
 
-Contributions are welcome. If you would like to improve the project:
-
+Christian Robinson     Jacob Younger
 1. Fork the repository
 2. Create a branch for your feature or fix
 3. Make your changes
@@ -132,7 +131,7 @@ Contributions are welcome. If you would like to improve the project:
 
 ## License
 
-This project does not currently include a license file. If you plan to share or distribute it publicly, add a license such as MIT or Apache 2.0.
+This project does not currently include a license file.
 
 ## Project Status
 
