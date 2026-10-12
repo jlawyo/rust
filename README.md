@@ -16,25 +16,8 @@ The application currently listens on port `3000` and responds with a JSON greeti
 ## Features
 
 - Minimal HTTP server setup
-- Single `/hello` endpoint
-- JSON response payload
-- Automated test coverage for the route
-
-## Installation
-
-Make sure Rust and Cargo are installed on your machine:
-
-```bash
-rustc --version
-cargo --version
-```
-
-Then clone the repository and build the project:
-
-```bash
-git clone <repository-url>
-cd rust
-cargo build
+- `/echo` endpoint
+- `/hello` endpoint
 ```
 
 ## Usage
@@ -58,81 +41,18 @@ Example response:
   "message": "Hello, World!"
 }
 ```
-
-## Building
-
-Compile the project without running it:
-
-```bash
-cargo build
-```
-
-Build an optimized release binary:
-
-```bash
-cargo build --release
-```
-
-## Testing
-
-Run the test suite:
-
-```bash
-cargo test
-```
-
-The test confirms that the `/hello` route returns the expected JSON response.
-
-## Project Structure
-
-```text
-.
-├── Cargo.toml
-├── README.md
-├── src/
-│   ├── lib.rs
-│   └── main.rs
-└── target/
-```
-
-- `src/main.rs` starts the server and binds it to `127.0.0.1:3000`
-- `src/lib.rs` defines the router and the `/hello` handler
-- `Cargo.toml` contains the Rust package metadata and dependencies
-
-## API
-
-### GET /hello
-
-Returns a JSON greeting.
-
-Example:
-
-```bash
-curl -i http://127.0.0.1:3000/hello
-```
-
-Response:
-
-```http
-HTTP/1.1 200 OK
-content-type: application/json
-
-{"message":"Hello, World!"}
-```
-
-## Contributing
-
-Christian Robinson     Jacob Younger
-1. Fork the repository
-2. Create a branch for your feature or fix
-3. Make your changes
-4. Run `cargo test`
-5. Open a pull request with a summary of the update
-
-## License
-
-This project does not currently include a license file.
+- Refer to rust.yml for more information
 
 ## Project Status
 
 This is a starter project in a working state. It is a foundation for learning Rust web development or expanding into a larger application.
+
+## License
+
+Copyright (c) <2026> < jlawyo and christiantherobinson-source>
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
