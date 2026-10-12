@@ -2,7 +2,6 @@ use std::net::SocketAddr;
 use axum::{serve};
 use hello_cargo::app;
 use utoipa_scalar::{Scalar, Servable};
-
 #[tokio::main]
     async fn main() {
         let (app, doc): (axum::Router, 
