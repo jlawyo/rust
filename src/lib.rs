@@ -1,4 +1,7 @@
-use axum::{routing::get, Json, Router};
+pub mod doc;
+mod endpoints{
+
+use axum::{Json};
 use serde_json::json;
 use axum::{
     extract::Query,
@@ -6,14 +9,9 @@ use axum::{
 use serde_derive::{Deserialize, Serialize};
 
 
-async fn hello_world() -> Json<serde_json::Value> {
+#[utoipa::path(get, path = "/hello")]
+pub async fn hello_world() -> Json<serde_json::Value> {
     Json(json!({ "message": "Hello, World!" }))
-}
-
-pub fn app() -> Router {
-    Router::new()
-        .route("/hello", get(hello_world))
-        .route("/echo", get(echo_text))
 }
 
 
@@ -22,6 +20,7 @@ pub struct Echo {
     pub text: Option<String>,
 }
 
+#[utoipa::path(get, path = "/echo")]
 
 pub async fn echo_text(Query(params): Query<Echo>) -> Json<Echo> {
     let Echo { text } = params;
@@ -30,15 +29,18 @@ pub async fn echo_text(Query(params): Query<Echo>) -> Json<Echo> {
         None =>   Json(Echo { text: Some(String::from("Echo"))}),
     }
 }
+
+
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use axum_test::{TestResponse, TestServer};
+
+    use axum_test::{TestServer};
     use serde_json::json;
 
     #[tokio::test]
     async fn test_hello_world_json() {
-        let server = TestServer::new(app());
+        let (router, _) = crate::app();
+        let server = TestServer::new(router);
 
         let response = server.get("/hello").await;
 
@@ -46,11 +48,25 @@ mod tests {
     }
     #[tokio::test]
     async fn test_echo() {
-        let server = TestServer::new(app());
+        let (router, _) = crate::app();
+        let server = TestServer::new(router);
 
         let response = server.get("/echo").await;
 
         response.assert_json(&json!({ "text": "Echo" }));
     }
 
+}
+
+}
+use axum::Router;
+use utoipa::OpenApi;
+use utoipa_axum::{router::OpenApiRouter, routes};
+
+use crate::doc::ApiDoc;
+pub fn app() -> (Router, utoipa::openapi::OpenApi) {
+    OpenApiRouter::with_openapi(ApiDoc::openapi())
+        .routes(routes!(endpoints::hello_world))
+        .routes(routes!(endpoints::echo_text))
+        .split_for_parts()
 }
