@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 use axum::{serve};
 use hello_cargo::app;
-use utoipa_swagger_ui::SwaggerUi;
+use utoipa_scalar::{Scalar, Servable};
 
 #[tokio::main]
     async fn main() {
