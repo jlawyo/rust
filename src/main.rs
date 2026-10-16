@@ -1,6 +1,7 @@
 use std::net::SocketAddr;
+use axum::{serve};
 use hello_cargo::app;
-use utoipa_swagger_ui::SwaggerUi;
+use utoipa_scalar::{Scalar, Servable};
 
 #[tokio::main]
 async fn main() {
@@ -9,11 +10,7 @@ async fn main() {
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     println!("Listening on {}", addr);
 
-    let listener = tokio::net::TcpListener::bind(addr)
-        .await
-        .unwrap();
-
-
-    let app = app.merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", doc));
-    axum::serve(listener, app).await.unwrap();
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    let app = app.merge(Scalar::with_url("/docs", doc));
+    serve(listener, app).await.unwrap();
 }
