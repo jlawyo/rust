@@ -15,12 +15,21 @@ pub async fn hello_world() -> Json<serde_json::Value> {
 }
 
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, utoipa::ToSchema)]
 pub struct Echo {
     pub text: Option<String>,
 }
 
-#[utoipa::path(get, path = "/echo")]
+#[utoipa::path(get, path = "/echo", 
+        tag = "Echo",
+        summary = "Echo Text Parameter",
+        params(("text" = Option<String>, Query, description = "Text to echo")),
+        description = "Returns the text sent in the query parameter. If no text is provided, it returns a default message.",
+        responses(
+            (status = 200, description = "Echo response", body = Echo),
+            (status = 400, description = "Bad Request"),
+        )
+)]
 
 pub async fn echo_text(Query(params): Query<Echo>) -> Json<Echo> {
     let Echo { text } = params;
