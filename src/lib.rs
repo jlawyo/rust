@@ -1,4 +1,63 @@
 pub mod doc;
+use axum::Router;
+use utoipa::OpenApi;
+use utoipa_axum::{router::OpenApiRouter, routes};
+
+use axum::{
+    body::Bytes,
+    extract::{Path as AxumPath, State},
+    http::{header, StatusCode},
+    routing::get,
+};
+use std::path::{Component, Path, PathBuf};
+use tokio::fs;
+use crate::doc::ApiDoc;
+
+pub fn app() -> (Router, utoipa::openapi::OpenApi) {
+    OpenApiRouter::with_openapi(ApiDoc::openapi())
+        .routes(routes!(endpoints::hello_world))
+        .routes(routes!(endpoints::echo_text))
+        .split_for_parts()
+    }
+
+
+
+
+mod endpoints{
+        use axum::{Json};
+    use serde_json::json;  
+    use axum::{extract::Query,};
+    use serde_derive::{Deserialize, Serialize};
+    #[utoipa::path(get, path = "/hello")]
+        pub async fn hello_world() -> Json<serde_json::Value> {
+            Json(json!({ "message": "Hello, World!" }))
+        }
+
+
+    #[derive(Debug, Deserialize, Serialize, utoipa::ToSchema)]
+        pub struct Echo {
+            pub text: Option<String>,
+        }
+
+    #[utoipa::path(get, path = "/echo", 
+            tag = "Echo",
+            summary = "Echo Text Parameter",
+            params(("text" = Option<String>, Query, description = "Text to echo")),
+            description = "Returns the text sent in the query parameter. If no text is provided, it returns a default message.",
+            responses(
+                (status = 200, description = "Echo response", body = Echo),
+                (status = 400, description = "Bad Request"),
+           )
+    )]
+
+    pub async fn echo_text(Query(params): Query<Echo>) -> Json<Echo> {
+        let Echo { text } = params;
+        match text{
+            Some(echoed_text) => Json(Echo { text: Some(echoed_text) }),
+            None =>   Json(Echo { text: Some(String::from("Echo"))}),
+        }
+    }
+}
 
 use axum::Router;
 use utoipa::OpenApi;
@@ -16,7 +75,7 @@ use crate::doc::ApiDoc;
 
 #[cfg(test)]
 mod tests {
-
+use super::*;
     use axum_test::{TestServer};
     use serde_json::json;
     use std::path::PathBuf;
@@ -34,7 +93,7 @@ mod tests {
                 NEXT_TEST_DIRECTORY.fetch_add(1, Ordering::Relaxed)
             ));
         (
-            TestServer::new(crate::file_router(directory.clone())),
+            TestServer::new(file_router(directory.clone())),
             directory,
         )
     }
@@ -127,28 +186,6 @@ mod tests {
 
 }
 
-}
-use axum::Router;
-use axum::{
-    body::Bytes,
-    extract::{Path as AxumPath, State},
-    http::{header, StatusCode},
-    routing::get,
-};
-use std::path::{Component, Path, PathBuf};
-use tokio::fs;
-use utoipa::OpenApi;
-use utoipa_axum::{router::OpenApiRouter, routes};
-
-use crate::doc::ApiDoc;
-pub fn app() -> (Router, utoipa::openapi::OpenApi) {
-    let (router, doc) = OpenApiRouter::with_openapi(ApiDoc::openapi())
-        .routes(routes!(endpoints::hello_world))
-        .routes(routes!(endpoints::echo_text))
-        .split_for_parts();
-
-    (router.merge(file_router("files")), doc)
-}
 
 #[derive(Clone)]
 struct FileStore {
