@@ -118,9 +118,10 @@ pub mod endpoints{
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use axum_test::{TestServer};
+    #[cfg(test)]
+    mod tests {
+        use axum_test::{TestServer};
+        use serde_json::json;
     use std::path::PathBuf;
     use std::sync::atomic::{AtomicU64, Ordering};
     use tokio::fs;
@@ -140,13 +141,20 @@ mod tests {
         )
     }
 
-    #[tokio::test]
-    async fn test_hello_world_json() {
-        let (router, _) = crate::app();
-        let server = TestServer::new(router);
-        let response = server.get("/hello").await;
-        response.assert_status_ok();
-    }
+        #[tokio::test]
+            async fn test_hello_world_json() {
+                let (router, _) = crate::app();
+                let server = TestServer::new(router);
+                let response = server.get("/hello").await;
+                response.assert_json(&json!({ "message": "Hello, World!" }));
+            }
+        #[tokio::test]
+        async fn test_echo() {
+            let (router, _) = crate::app();
+            let server = TestServer::new(router);
+            let response = server.get("/echo").await;
+            response.assert_json(&json!({ "text": "Echo" }));
+        }
 
     #[tokio::test]
     async fn test_put_file_then_get_contents() {
@@ -190,6 +198,6 @@ mod tests {
         fs::remove_dir_all(directory).await.unwrap();
     }
 
-}
+    }
 
 
