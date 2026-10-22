@@ -69,13 +69,81 @@ mod tests {
 
 }
 use axum::Router;
+use axum::{
+    body::Bytes,
+    extract::{Path as AxumPath, State},
+    http::{header, StatusCode},
+    routing::get,
+};
+use std::path::{Component, Path, PathBuf};
+use tokio::fs;
 use utoipa::OpenApi;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 use crate::doc::ApiDoc;
 pub fn app() -> (Router, utoipa::openapi::OpenApi) {
-    OpenApiRouter::with_openapi(ApiDoc::openapi())
+    let (router, doc) = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .routes(routes!(endpoints::hello_world))
         .routes(routes!(endpoints::echo_text))
-        .split_for_parts()
+        .split_for_parts();
+
+    (router.merge(file_router("files")), doc)
+}
+
+#[derive(Clone)]
+struct FileStore {
+    directory: PathBuf,
+}
+
+fn file_router(directory: impl Into<PathBuf>) -> Router {
+    Router::new()
+        .route("/file/{filename}", get(get_file).put(put_file))
+        .with_state(FileStore {
+            directory: directory.into(),
+        })
+}
+
+fn file_path(directory: &Path, filename: &str) -> Result<PathBuf, StatusCode> {
+    let path = Path::new(filename);
+    if filename.contains('/')
+        || filename.contains('\\')
+        || !matches!(path.components().next(), Some(Component::Normal(_)))
+        || path.components().count() != 1
+    {
+        return Err(StatusCode::BAD_REQUEST);
+    }
+
+    Ok(directory.join(path))
+}
+
+async fn put_file(
+    State(store): State<FileStore>,
+    AxumPath(filename): AxumPath<String>,
+    contents: Bytes,
+) -> Result<StatusCode, StatusCode> {
+    let path = file_path(&store.directory, &filename)?;
+    fs::create_dir_all(&store.directory)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    fs::write(path, contents)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    Ok(StatusCode::OK)
+}
+
+async fn get_file(
+    State(store): State<FileStore>,
+    AxumPath(filename): AxumPath<String>,
+) -> Result<impl axum::response::IntoResponse, StatusCode> {
+    let path = file_path(&store.directory, &filename)?;
+    let contents = fs::read(path).await.map_err(|error| {
+        if error.kind() == std::io::ErrorKind::NotFound {
+            StatusCode::NOT_FOUND
+        } else {
+            StatusCode::INTERNAL_SERVER_ERROR
+        }
+    })?;
+
+    Ok(([(header::CONTENT_TYPE, "application/text")], contents))
 }
