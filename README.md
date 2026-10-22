@@ -18,7 +18,7 @@ The application currently listens on port `3000` and responds with a JSON greeti
 - Minimal HTTP server setup
 - `/echo` endpoint
 - `/hello` endpoint
-```
+- `PUT` and `GET /file/{filename}` store and retrieve text files
 
 ## Usage
 
@@ -42,6 +42,26 @@ Example response:
 }
 ```
 - Refer to rust.yml for more information
+
+## File API
+
+Files are stored in the `files/` directory. `PUT` saves the request body as a file, and `GET` returns its contents. Use a single filename in the URL, not a directory path.
+
+Save a file:
+
+```bash
+curl -X PUT http://127.0.0.1:3000/file/file.txt \
+  -H "Content-Type: text/plain" \
+  --data "Hello, file!"
+```
+
+Retrieve it:
+
+```bash
+curl http://127.0.0.1:3000/file/file.txt
+```
+
+Sending another `PUT` to the same URL replaces the file's contents.
 
 ## Project Status
 
