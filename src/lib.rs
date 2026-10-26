@@ -1,14 +1,12 @@
 pub mod doc;
-use axum::Router;
-use utoipa::OpenApi;
-use utoipa_axum::{router::OpenApiRouter, routes};
-use crate::doc::ApiDoc;
-    use axum::{
+use axum::{Router, 
     body::Bytes,
     extract::{Path as AxumPath, State},
     http::{header, StatusCode},
-    routing::get,
-};
+    routing::get,};
+use utoipa::OpenApi;
+use utoipa_axum::{router::OpenApiRouter, routes};
+use crate::doc::ApiDoc;
 use std::path::{Component, Path, PathBuf};
 use tokio::fs;
 
