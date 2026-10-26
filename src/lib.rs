@@ -1,41 +1,40 @@
 pub mod doc;
+use crate::doc::ApiDoc;
 use axum::Router;
 use utoipa::OpenApi;
 use utoipa_axum::{router::OpenApiRouter, routes};
-use crate::doc::ApiDoc;
-
 
 pub fn app() -> (Router, utoipa::openapi::OpenApi) {
     OpenApiRouter::with_openapi(ApiDoc::openapi())
         .routes(routes!(endpoints::hello_world))
         .routes(routes!(endpoints::echo_text))
         .split_for_parts()
-    }
+}
 
-
-
-
-pub mod endpoints{
+pub mod endpoints {
+    use axum::Json;
+    use axum::{
+        Router,
+        body::Bytes,
+        extract::Query,
+        extract::{Path as AxumPath, State},
+        http::{StatusCode, header},
+        routing::get,
+    };
+    use serde_derive::{Deserialize, Serialize};
+    use serde_json::json;
     use std::path::{Component, Path, PathBuf};
     use tokio::fs;
-    use axum::{Json};
-    use serde_json::json;  
-    use axum::{Router,extract::Query, body::Bytes,
-    extract::{Path as AxumPath, State},
-    http::{header, StatusCode},
-    routing::get,};
-    use serde_derive::{Deserialize, Serialize};
-    
-    #[utoipa::path(get, path = "/hello")]
-        pub async fn hello_world() -> Json<serde_json::Value> {
-            Json(json!({ "message": "Hello, World!" }))
-        }
 
+    #[utoipa::path(get, path = "/hello")]
+    pub async fn hello_world() -> Json<serde_json::Value> {
+        Json(json!({ "message": "Hello, World!" }))
+    }
 
     #[derive(Debug, Deserialize, Serialize, utoipa::ToSchema)]
-        pub struct Echo {
-            pub text: Option<String>,
-        }
+    pub struct Echo {
+        pub text: Option<String>,
+    }
 
     #[utoipa::path(get, path = "/echo", 
             tag = "Echo",
@@ -50,16 +49,17 @@ pub mod endpoints{
 
     pub async fn echo_text(Query(params): Query<Echo>) -> Json<Echo> {
         let Echo { text } = params;
-        match text{
-            Some(echoed_text) => Json(Echo { text: Some(echoed_text) }),
-            None =>   Json(Echo { text: Some(String::from("Echo"))}),
+        match text {
+            Some(echoed_text) => Json(Echo {
+                text: Some(echoed_text),
+            }),
+            None => Json(Echo {
+                text: Some(String::from("Echo")),
+            }),
         }
     }
 
-
-
-
-#[derive(Clone)]
+    #[derive(Clone)]
     pub struct FileStore {
         directory: PathBuf,
     }
@@ -71,6 +71,9 @@ pub mod endpoints{
                 directory: directory.into(),
             })
     }
+    ///# Errors
+
+    /// Returns `StatusCode::BAD_REQUEST` if the filename is invalid (contains slashes or backslashes, or is not a normal component)
 
     pub fn file_path(directory: &Path, filename: &str) -> Result<PathBuf, StatusCode> {
         let path = Path::new(filename);
@@ -84,7 +87,12 @@ pub mod endpoints{
 
         Ok(directory.join(path))
     }
+    ///# Errors
 
+    /// Returns `StatusCode::INTERNAL_SERVER_ERROR` if the file cannot be created or written to.
+    /// Returns `StatusCode::BAD_REQUEST` if the filename is invalid (contains slashes or backslashes, or is not a normal component)
+
+    /// Returns `StatusCode::NOT_FOUND` if the file does not exist when trying to read it.
     pub async fn put_file(
         State(store): State<FileStore>,
         AxumPath(filename): AxumPath<String>,
@@ -100,7 +108,12 @@ pub mod endpoints{
 
         Ok(StatusCode::OK)
     }
+    ///# Errors
 
+    /// Returns `StatusCode::INTERNAL_SERVER_ERROR` if the file cannot be read.
+    /// Returns `StatusCode::BAD_REQUEST` if the filename is invalid (contains slashes or backslashes, or is not a normal component).
+
+    /// Returns `StatusCode::NOT_FOUND` if the file does not exist when trying to read it.
     pub async fn get_file(
         State(store): State<FileStore>,
         AxumPath(filename): AxumPath<String>,
@@ -118,10 +131,10 @@ pub mod endpoints{
     }
 }
 
-    #[cfg(test)]
-    mod tests {
-        use axum_test::{TestServer};
-        use serde_json::json;
+#[cfg(test)]
+mod tests {
+    use axum_test::TestServer;
+    use serde_json::json;
     use std::path::PathBuf;
     use std::sync::atomic::{AtomicU64, Ordering};
     use tokio::fs;
@@ -141,29 +154,26 @@ pub mod endpoints{
         )
     }
 
-        #[tokio::test]
-            async fn test_hello_world_json() {
-                let (router, _) = crate::app();
-                let server = TestServer::new(router);
-                let response = server.get("/hello").await;
-                response.assert_json(&json!({ "message": "Hello, World!" }));
-            }
-        #[tokio::test]
-        async fn test_echo() {
-            let (router, _) = crate::app();
-            let server = TestServer::new(router);
-            let response = server.get("/echo").await;
-            response.assert_json(&json!({ "text": "Echo" }));
-        }
+    #[tokio::test]
+    async fn test_hello_world_json() {
+        let (router, _) = crate::app();
+        let server = TestServer::new(router);
+        let response = server.get("/hello").await;
+        response.assert_json(&json!({ "message": "Hello, World!" }));
+    }
+    #[tokio::test]
+    async fn test_echo() {
+        let (router, _) = crate::app();
+        let server = TestServer::new(router);
+        let response = server.get("/echo").await;
+        response.assert_json(&json!({ "text": "Echo" }));
+    }
 
     #[tokio::test]
     async fn test_put_file_then_get_contents() {
         let (server, directory) = file_test_server();
 
-        let response = server
-            .put("/file/file.txt")
-            .text("Hello, file!")
-            .await;
+        let response = server.put("/file/file.txt").text("Hello, file!").await;
         response.assert_status_ok();
 
         let response = server.get("/file/file.txt").await;
@@ -197,7 +207,4 @@ pub mod endpoints{
 
         fs::remove_dir_all(directory).await.unwrap();
     }
-
-    }
-
-
+}
