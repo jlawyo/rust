@@ -5,10 +5,18 @@ use utoipa::OpenApi;
 use utoipa_axum::{router::OpenApiRouter, routes};
 
 pub fn app() -> (Router, utoipa::openapi::OpenApi) {
-    OpenApiRouter::with_openapi(ApiDoc::openapi())
+    app_with_file_dir("files")
+}
+
+pub fn app_with_file_dir(
+    file_dir: impl Into<std::path::PathBuf>,
+) -> (Router, utoipa::openapi::OpenApi) {
+    let (router, openapi) = OpenApiRouter::with_openapi(ApiDoc::openapi())
         .routes(routes!(endpoints::hello_world))
         .routes(routes!(endpoints::echo_text))
-        .split_for_parts()
+        .split_for_parts();
+
+    (router.merge(endpoints::file_router(file_dir)), openapi)
 }
 
 pub mod endpoints {
