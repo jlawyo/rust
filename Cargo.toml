@@ -14,5 +14,7 @@ axum-test = "21"
 utoipa-axum = "0.3"
 utoipa = "6"
 utoipa-scalar = { version = "0.4", features = ["axum"] }
+web-sys = { version = "0.3.107", features = ["HtmlInputElement"] }
+yew = { version = "0.23.0", features = ["csr"] }
 [lints.clippy]
 pedantic = "warn"
