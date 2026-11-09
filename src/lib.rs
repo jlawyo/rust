@@ -71,10 +71,9 @@ pub mod endpoints {
                 directory: directory.into(),
             })
     }
+
     ///# Errors
-
     /// Returns `StatusCode::BAD_REQUEST` if the filename is invalid (contains slashes or backslashes, or is not a normal component)
-
     pub fn file_path(directory: &Path, filename: &str) -> Result<PathBuf, StatusCode> {
         let path = Path::new(filename);
         if filename.contains('/')
@@ -87,11 +86,10 @@ pub mod endpoints {
 
         Ok(directory.join(path))
     }
-    ///# Errors
 
+    ///# Errors
     /// Returns `StatusCode::INTERNAL_SERVER_ERROR` if the file cannot be created or written to.
     /// Returns `StatusCode::BAD_REQUEST` if the filename is invalid (contains slashes or backslashes, or is not a normal component)
-
     /// Returns `StatusCode::NOT_FOUND` if the file does not exist when trying to read it.
     pub async fn put_file(
         State(store): State<FileStore>,
@@ -108,11 +106,10 @@ pub mod endpoints {
 
         Ok(StatusCode::OK)
     }
-    ///# Errors
 
+    ///# Errors
     /// Returns `StatusCode::INTERNAL_SERVER_ERROR` if the file cannot be read.
     /// Returns `StatusCode::BAD_REQUEST` if the filename is invalid (contains slashes or backslashes, or is not a normal component).
-
     /// Returns `StatusCode::NOT_FOUND` if the file does not exist when trying to read it.
     pub async fn get_file(
         State(store): State<FileStore>,
@@ -161,6 +158,7 @@ mod tests {
         let response = server.get("/hello").await;
         response.assert_json(&json!({ "message": "Hello, World!" }));
     }
+
     #[tokio::test]
     async fn test_echo() {
         let (router, _) = crate::app();
