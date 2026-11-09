@@ -1,5 +1,4 @@
 #![warn(clippy::pedantic)]
-mod yew;
 use axum::serve;
 use hello_cargo::app;
 use std::net::SocketAddr;
