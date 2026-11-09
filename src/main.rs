@@ -1,4 +1,5 @@
 #![warn(clippy::pedantic)]
+mod yew;
 use axum::serve;
 use hello_cargo::app;
 use std::net::SocketAddr;
@@ -10,5 +11,6 @@ async fn main() {
     println!("Listening on {addr}");
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
     let app = app.merge(Scalar::with_url("/docs", doc));
+    println!("API is on http://localhost:3000/docs");
     serve(listener, app).await.unwrap();
 }
