@@ -205,5 +205,4 @@ mod tests {
 
         fs::remove_dir_all(directory).await.unwrap();
     }
-
-    }
+}
