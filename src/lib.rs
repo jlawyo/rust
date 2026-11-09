@@ -158,6 +158,7 @@ mod tests {
         let response = server.get("/hello").await;
         response.assert_json(&json!({ "message": "Hello, World!" }));
     }
+
     #[tokio::test]
     async fn test_echo() {
         let (router, _) = crate::app();
